@@ -1,0 +1,1 @@
+"0","plot(reg_nonpara4,xlab=c(""Period""),ylab=c(""Number of patients""),ylim=range(rmin,rmax),   col = ""red"")"

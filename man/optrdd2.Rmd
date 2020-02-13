@@ -1,0 +1,169 @@
+---
+title: "optrdd2"
+author: "haiyan yu"
+date: "1/18/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library("rdd")
+library("rddtools")
+```
+
+```{r}
+ library(readxl)
+#award <- read_excel("~/Downloads/Rpkg/optrdd2/data/sum_avg_award_paper.xlsx",sheet = "df")
+award <- read_excel("~/Downloads/Rpkg/optrdd2/data/data_avg_treat.xlsx")
+#head(award)
+#award<-award[1:4152,]
+#award<-data_avg_treat
+head(award[award$D==0,])
+award1<-award[award$D==0,]
+award2<-award[award$D==1,]
+##
+cut.off<-6
+#award<-sum_avg_award_paper
+rdd_dat_indh <- rdd_data(#y=Patient,
+                         y=Views,
+                         x=period,
+                         data=award1,
+                         cutpoint=cut.off)
+#award<-sum_avg_award_paper
+rdd_dat_indh2 <- rdd_data(#y=Patient,
+                         y=Views,
+                         x=period,
+                         data=award2,
+                         cutpoint=cut.off)
+str(rdd_dat_indh)
+str(rdd_dat_indh2)
+#plot(y=award$patient1,  x=award$article, data=award)
+#plot(y=award$patient1,  x=award$period, data=award)
+summary(rdd_dat_indh)
+head(rdd_dat_indh)
+#df<-data.farme(award)
+#award_rdd <- rdd_data(y=award$patient1, x=award$article, cutpoint=700)
+plot(rdd_dat_indh)
+plot(rdd_dat_indh2)
+```
+ 
+```{r}
+(reg_para <- rdd_reg_lm(rdd_dat_indh, order=1))
+(reg_para2 <- rdd_reg_lm(rdd_dat_indh2, order=1))
+ 
+rmin<-min(award$Views)-3000
+rmax<-max(award$Views)+2000
+plot(reg_para,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax))
+#use par and plot on the same graph but different axis. 
+par(new=TRUE)
+plot(reg_para2,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Awarded group","Control group"), pch=c(16,16),col = c("black","red"),horiz=F)#, title="Group"
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+#(reg_para <- rdd_reg_lm(rdd_dat_indh, order=0))
+#plot(reg_para,xlab=c("Period"),ylab=c("Number of patients"))
+
+#(reg_para <- rdd_reg_lm(rdd_dat_indh, order=4))
+#plot(reg_para,xlab=c("Period"),ylab=c("Number of patients"))
+```
+
+```{r}
+bw_ik <- rdd_bw_ik(rdd_dat_indh)
+bw_ik2 <- rdd_bw_ik(rdd_dat_indh2)
+(reg_nonpara <- rdd_reg_np(rdd_object=rdd_dat_indh, bw=bw_ik))
+(reg_nonpara2 <- rdd_reg_np(rdd_object=rdd_dat_indh2, bw=bw_ik2))
+
+rmin<-min(award$Views)-3000
+rmax<-max(award$Views)+2000
+plot(reg_nonpara,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax))
+#use par and plot on the same graph but different axis. 
+par(new=TRUE)
+plot(reg_nonpara2,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Awarded group","Control group"), pch=c(16,16),col = c("black","red"),horiz=F)#, title="Group"
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+```
+
+
+```{r}
+##
+cut.off<-6
+#award<-sum_avg_award_paper
+rdd_dat_indh3 <- rdd_data(y=Patient,
+                         x=period,
+                         data=award1,
+                         cutpoint=cut.off)
+#award<-sum_avg_award_paper
+rdd_dat_indh4 <- rdd_data(y=Patient,
+                         x=period,
+                         data=award2,
+                         cutpoint=cut.off)
+str(rdd_dat_indh3)
+str(rdd_dat_indh4)
+#plot(y=award$patient1,  x=award$article, data=award)
+#plot(y=award$patient1,  x=award$period, data=award)
+summary(rdd_dat_indh3)
+head(rdd_dat_indh3)
+#df<-data.farme(award)
+#award_rdd <- rdd_data(y=award$patient1, x=award$article, cutpoint=700)
+plot(rdd_dat_indh3)
+plot(rdd_dat_indh4)
+```
+ 
+```{r}
+(reg_para3 <- rdd_reg_lm(rdd_dat_indh3, order=1))
+(reg_para4 <- rdd_reg_lm(rdd_dat_indh4, order=1))
+
+rmin<-min(award$Patient)-30
+rmax<-max(award$Patient)+10
+plot(reg_para3,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax),  col = "black")
+par(new=TRUE)
+plot(reg_para4,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Awarded group","Control group"), pch=c(16,16),col = c("black","red"),horiz=F)#, title="Group"
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+```
+
+```{r}
+bw_ik3 <- rdd_bw_ik(rdd_dat_indh3)
+bw_ik4 <- rdd_bw_ik(rdd_dat_indh4)
+(reg_nonpara3 <- rdd_reg_np(rdd_object=rdd_dat_indh3, bw=bw_ik3))
+(reg_nonpara4 <- rdd_reg_np(rdd_object=rdd_dat_indh4, bw=bw_ik4))
+
+rmin<-min(award$Patient)-30
+rmax<-max(award$Patient)+10
+plot(reg_nonpara3,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax))
+par(new=TRUE)
+plot(reg_nonpara4,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Awarded group","Control group"), pch=c(16,16),col = c("black","red"),horiz=F)
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+#Before awards
+```
+
+Sensitity tests.
+
+```{r}
+plotSensi(reg_nonpara3, from=1, to=70000, by=5000)
+all(is.na(reg_nonpara3))
+
+house_rdd <- rdd_data(#y=Patient,
+                         y=award1$Views,
+                         x=award1$period,
+                         cutpoint=cut.off)
+reg_nonpara <- rdd_reg_np(rdd_object=house_rdd)
+plotPlacebo(reg_nonpara)
+
+
+data(house)
+house_rdd <- rdd_data(y=house$y, x=house$x, cutpoint=0)
+reg_nonpara <- rdd_reg_np(rdd_object=house_rdd)
+plotPlacebo(reg_nonpara)
+
+#plotPlacebo(reg_nonpara3)
+#dens_test(reg_nonpara)
+#Design Sensitivity tests
+#dens_test(reg_nonpara3)
+dens_test(rdd_dat_indh)
+```

@@ -1,0 +1,203 @@
+---
+title: "Regression Discontinuity Design for treatment identification of the honorary title in online healthcare communities"
+author: "haiyan yu"
+date: "1/31/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Regression Discontinuity Design 
+
+This function estimates the standard discontinuity regression:
+#library("rddtools")
+$Y=\alpha+\lambda D+\beta_1(X-c)+\beta_2(X-c)+\epsilon$
+
+
+#packages
+```{r, include=FALSE}
+library("rdd")
+library("rddtools")
+ library(readxl)
+```
+# Data inputs
+```{r}
+treat_control <- read_excel("~/Downloads/treat_control.xlsx", 
+     sheet = "ciewdf")
+ctr.viewdf<-treat_control[complete.cases(treat_control),]
+#award1<-ctr.viewdf
+head(ctr.viewdf)
+treat_control <- read_excel("~/Downloads/treat_control.xlsx", 
+     sheet = "cpatdf")
+ctr.patdf<-treat_control[complete.cases(treat_control),]
+head(ctr.patdf)
+
+treat_control <- read_excel("~/Downloads/treat_control.xlsx", 
+     sheet = "tiewdf")
+trt.viewdf<-treat_control[complete.cases(treat_control),]
+#award1<-ctr.viewdf
+head(trt.viewdf)
+
+treat_control <- read_excel("~/Downloads/treat_control.xlsx", 
+     sheet = "tpatdf")
+trt.patdf<-treat_control[complete.cases(treat_control),]
+head(trt.patdf)
+nrow(trt.patdf)
+```
+
+#Data structure
+
+```{r}
+cut.off<-6
+#trt.df<-trt.patdf
+#ctr.df<-ctr.patdf
+
+
+rdd_dat_indh <- rdd_data(#y=Patient,
+                         y=ciewdf,
+                         x=period,
+                         data=ctr.viewdf,
+                         cutpoint=cut.off)
+#award<-sum_avg_award_paper
+rdd_dat_indh2 <- rdd_data(#y=Patient,
+                         y=tiewdf,
+                         x=period,
+                         data=trt.viewdf,
+                         cutpoint=cut.off)
+
+rdd_dat_indh3 <- rdd_data(#y=Patient,
+                         y=cpatdf,
+                         x=period,
+                         data=ctr.patdf,
+                         cutpoint=cut.off)
+#award<-sum_avg_award_paper
+rdd_dat_indh4 <- rdd_data(#y=Patient,
+                         y=tpatdf,
+                         x=period,
+                         data=trt.patdf,
+                         cutpoint=cut.off)
+
+
+str(rdd_dat_indh)
+str(rdd_dat_indh2)
+#plot(y=award$patient1,  x=award$article, data=award)
+#plot(y=award$patient1,  x=award$period, data=award)
+summary(rdd_dat_indh)
+head(rdd_dat_indh)
+#df<-data.farme(award)
+#award_rdd <- rdd_data(y=award$patient1, x=award$article, cutpoint=700)
+#bandwidth<-1
+#plot(rdd_dat_indh)
+#plot(rdd_dat_indh2)
+```
+ 
+ 
+# Results comparison 
+
+##monthly homepage views
+
+
+```{r}
+(reg_para <- rdd_reg_lm(rdd_dat_indh, order=1))
+(reg_para2 <- rdd_reg_lm(rdd_dat_indh2, order=1))
+ 
+s.d<-sd(ctr.viewdf$ciewdf)
+rmin<- max(median(ctr.viewdf$ciewdf)-3*s.d,0)
+rmax<-  median(ctr.viewdf$ciewdf)+1*s.d
+#rmin<-min(ctr.viewdf$ciewdf)*0.9
+#rmax<-max(trt.viewdf$tiewdf)*1.1
+{
+  plot(reg_para,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax))
+#use par and plot on the same graph but different axis. 
+par(new=TRUE)
+plot(reg_para2,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Control group","Awarded group"), pch=c(16,16),col = c("black","red"),horiz=F)#, title="Group"
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+}
+#(reg_para <- rdd_reg_lm(rdd_dat_indh, order=0))
+#plot(reg_para,xlab=c("Period"),ylab=c("Number of patients"))
+
+#(reg_para <- rdd_reg_lm(rdd_dat_indh, order=4))
+#plot(reg_para,xlab=c("Period"),ylab=c("Number of patients"))
+ 
+ 
+bw_ik <- rdd_bw_ik(rdd_dat_indh)
+bw_ik2 <- rdd_bw_ik(rdd_dat_indh2)
+(reg_nonpara <- rdd_reg_np(rdd_object=rdd_dat_indh, bw=bw_ik))
+(reg_nonpara2 <- rdd_reg_np(rdd_object=rdd_dat_indh2, bw=bw_ik2))
+
+rmin<- max(median(ctr.viewdf$ciewdf)-3*s.d,0)
+rmax<-  median(ctr.viewdf$ciewdf)+1*s.d
+{
+  plot(reg_nonpara,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax))
+#use par and plot on the same graph but different axis. 
+par(new=TRUE)
+plot(reg_nonpara2,xlab=c("Period"),ylab=c("Number of views"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Control group","Awarded group"), pch=c(16,16),col = c("black","red"),horiz=F)#, title="Group"
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+}
+
+```
+
+### Sensitity tests.
+
+```{r}
+#plotSensi(reg_nonpara, from=1, to=70000, by=5000)
+#all(is.na(reg_nonpara))
+ 
+#plotPlacebo(reg_nonpara)
+
+```
+
+## Monthly online consultations
+
+Data was demonstrated in the sets of  ctr.patdf v.s. trt.patdf. 
+
+```{r}
+(reg_para3 <- rdd_reg_lm(rdd_dat_indh3, order=1))
+(reg_para4 <- rdd_reg_lm(rdd_dat_indh4, order=1))
+ 
+s.d<-sd(ctr.patdf$cpatdf)
+s.d2<-sd(trt.patdf$tpatdf)
+rmin<- max(median(ctr.patdf$cpatdf)-1*s.d,0,median(trt.patdf$tpatdf)-1*s.d2)
+rmax<-  max(median(ctr.patdf$cpatdf)+1*s.d, median(trt.patdf$tpatdf)+1*s.d2)
+#rmin<-min(ctr.viewdf$ciewdf)*0.9
+#rmax<-max(trt.viewdf$tiewdf)*1.1
+{
+  plot(reg_para3,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax),  col = "black")
+par(new=TRUE)
+plot(reg_para4,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Control group","Awarded group"), pch=c(16,16),col = c("black","red"),horiz=F)#, title="Group"
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+}
+#(reg_para <- rdd_reg_lm(rdd_dat_indh, order=0))
+#plot(reg_para,xlab=c("Period"),ylab=c("Number of patients"))
+
+#(reg_para <- rdd_reg_lm(rdd_dat_indh, order=4))
+#plot(reg_para,xlab=c("Period"),ylab=c("Number of patients"))
+ 
+ 
+bw_ik <- rdd_bw_ik(rdd_dat_indh3)
+bw_ik2 <- rdd_bw_ik(rdd_dat_indh4)
+(reg_nonpara3 <- rdd_reg_np(rdd_object=rdd_dat_indh3, bw=bw_ik))
+(reg_nonpara4 <- rdd_reg_np(rdd_object=rdd_dat_indh4, bw=bw_ik2))
+
+#rmin<- max(median(ctr.viewdf$ciewdf)-3*s.d,0)
+#rmax<-  median(ctr.viewdf$ciewdf)+1*s.d
+{
+plot(reg_nonpara3,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax))
+par(new=TRUE)
+plot(reg_nonpara4,xlab=c("Period"),ylab=c("Number of patients"),ylim=range(rmin,rmax),   col = "red")
+legend("bottomleft",legend=c("Control group","Awarded group"), pch=c(16,16),col = c("black","red"),horiz=F)
+abline(v = cut.off, col="blue", lwd=2, lty=2)
+}
+
+```
+
+#Reference
+
+[1] Imbens, Guido and Karthik Kalyanaraman. (2012) ’Optimal Bandwidth Choice for the regression discontinuity estimator,’ Review of Economic Studies (2012) 79, 933-959
+[2]Guido Imbens webpage: http://scholar.harvard.edu/imbens/scholar_software/regression-discontinuity
+[3] The oneline healthcare community: www.haodf.com

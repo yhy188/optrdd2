@@ -1,0 +1,34 @@
+"0","library(""rdd"")"
+"2","Loading required package: sandwich
+"
+"2","Loading required package: lmtest
+"
+"2","Loading required package: zoo
+"
+"2","
+Attaching package: ‘zoo’
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+"
+"2","Loading required package: AER
+"
+"2","Loading required package: car
+"
+"2","Loading required package: carData
+"
+"2","Loading required package: survival
+"
+"2","Loading required package: Formula
+"
+"0","library(""rddtools"")"
+"2","Loading required package: np
+"
+"2","Nonparametric Kernel Methods for Mixed Datatypes (version 0.60-9)
+[vignette(""np_faq"",package=""np"") provides answers to frequently asked questions]
+[vignette(""np"",package=""np"") an overview]
+[vignette(""entropy_np"",package=""np"") an overview of entropy-based methods]
+"
